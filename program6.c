@@ -1,129 +1,164 @@
 #include <stdio.h>
 #include <stdlib.h>
-struct BST {
-	int data;
-	struct BST *lchild;
-	struct BST *rchild;
-};
-typedef struct BST *NODE;
-NODE create()
-{
-	NODE temp;
-	temp = (NODE)malloc(sizeof(struct BST));
-	printf("\nEnter The value: ");
-	scanf("%d", &temp->data);
-	temp->lchild = NULL;
-	temp->rchild = NULL;
-	return temp;
-}
-void insert(NODE root, NODE newnode);
-void inorder(NODE root);
-void preorder(NODE root);
-void postorder(NODE root);
-void search(NODE root);
-void insert(NODE root, NODE newnode)
-{
-	if (newnode->data < root->data) {
-		if (root->lchild == NULL)
-			root->lchild = newnode;
-		else
-			insert(root->lchild, newnode);
-	}
-	if (newnode->data > root->data) {
-		if (root->rchild == NULL)
-			root->rchild = newnode;
-		else
-			insert(root->rchild, newnode);
-	}
-}
-void search(NODE root)
-{
+struct Node {
 	int key;
-	NODE cur;
-	if (root == NULL) {
-		printf("\nBST is empty.");
-		return;
+	struct Node *left;
+	struct Node *right;
+	int height;
+};
+int max(int a, int b);
+int height(struct Node *N);
+struct Node *newNode(int key);
+struct Node *rightRotate(struct Node *y);
+struct Node *leftRotate(struct Node *x);
+int getBalance(struct Node *N);
+struct Node *insertNode(struct Node *node, int key);
+struct Node *minValueNode(struct Node *node);
+struct Node *deleteNode(struct Node *root, int key);
+void printPreOrder(struct Node *root);
+int max(int a, int b)
+{
+	return (a > b) ? a : b;
+}
+int height(struct Node *N)
+{
+	if (N == NULL)
+		return 0;
+	return N->height;
+}
+struct Node *newNode(int key)
+{
+	struct Node *node = (struct Node *)malloc(sizeof(struct Node));
+	node->key = key;
+	node->left = NULL;
+	node->right = NULL;
+	node->height = 1;
+	return node;
+}
+struct Node *rightRotate(struct Node *y)
+{
+	struct Node *x = y->left;
+	struct Node *T2 = x->right;
+	x->right = y;
+	y->left = T2;
+	y->height = max(height(y->left), height(y->right)) + 1;
+	x->height = max(height(x->left), height(x->right)) + 1;
+	return x;
+}
+struct Node *leftRotate(struct Node *x)
+{
+	struct Node *y = x->right;
+	struct Node *T2 = y->left;
+	y->left = x;
+	x->right = T2;
+	x->height = max(height(x->left), height(x->right)) + 1;
+	y->height = max(height(y->left), height(y->right)) + 1;
+	return y;
+}
+int getBalance(struct Node *N)
+{
+	if (N == NULL)
+		return 0;
+	return height(N->left) - height(N->right);
+}
+struct Node *insertNode(struct Node *node, int key)
+{
+	if (node == NULL)
+		return newNode(key);
+	if (key < node->key)
+		node->left = insertNode(node->left, key);
+	else if (key > node->key)
+		node->right = insertNode(node->right, key);
+	else
+		return node;
+	node->height = 1 + max(height(node->left), height(node->right));
+	int balance = getBalance(node);
+	if (balance > 1 && key < node->left->key)
+		return rightRotate(node);
+	if (balance < -1 && key > node->right->key)
+		return leftRotate(node);
+	if (balance > 1 && key > node->left->key) {
+		node->left = leftRotate(node->left);
+		return rightRotate(node);
 	}
-	printf("\nEnter Element to be searched: ");
-	scanf("%d", &key);
-	cur = root;
-	while (cur != NULL) {
-		if (cur->data == key) {
-			printf("\nKey element is present in BST");
-			return;
+	if (balance < -1 && key < node->right->key) {
+		node->right = rightRotate(node->right);
+		return leftRotate(node);
+	}
+	return node;
+}
+struct Node *minValueNode(struct Node *node)
+{
+	struct Node *current = node;
+	while (current->left != NULL)
+		current = current->left;
+	return current;
+}
+struct Node *deleteNode(struct Node *root, int key)
+{
+	if (root == NULL)
+		return root;
+	if (key < root->key)
+		root->left = deleteNode(root->left, key);
+	else if (key > root->key)
+		root->right = deleteNode(root->right, key);
+	else {
+		if ((root->left == NULL) || (root->right == NULL)) {
+			struct Node *temp = root->left ? root->left : root->right;
+			if (temp == NULL) {
+				temp = root;
+				root = NULL;
+			} else
+				*root = *temp;
+			free(temp);
+		} else {
+			struct Node *temp = minValueNode(root->right);
+			root->key = temp->key;
+			root->right = deleteNode(root->right, temp->key);
 		}
-		if (key < cur->data)
-			cur = cur->lchild;
-		else
-			cur = cur->rchild;
 	}
-	printf("\nKey element is not found in the BST");
+	if (root == NULL)
+		return root;
+	root->height = 1 + max(height(root->left), height(root->right));
+	int balance = getBalance(root);
+	if (balance > 1 && getBalance(root->left) >= 0)
+		return rightRotate(root);
+	if (balance > 1 && getBalance(root->left) < 0) {
+		root->left = leftRotate(root->left);
+		return rightRotate(root);
+	}
+	if (balance < -1 && getBalance(root->right) <= 0)
+		return leftRotate(root);
+	if (balance < -1 && getBalance(root->right) > 0) {
+		root->right = rightRotate(root->right);
+		return leftRotate(root);
+	}
+	return root;
 }
-void inorder(NODE root)
+void printPreOrder(struct Node *root)
 {
 	if (root != NULL) {
-		inorder(root->lchild);
-		printf("%d ", root->data);
-		inorder(root->rchild);
+		printf("%d ", root->key);
+		printPreOrder(root->left);
+		printPreOrder(root->right);
 	}
 }
-void preorder(NODE root)
+int main()
 {
-	if (root != NULL) {
-		printf("%d ", root->data);
-		preorder(root->lchild);
-		preorder(root->rchild);
-	}
-}
-void postorder(NODE root)
-{
-	if (root != NULL) {
-		postorder(root->lchild);
-		postorder(root->rchild);
-		printf("%d ", root->data);
-	}
-}
-void main()
-{
-	int ch, key, val, i, n;
-	NODE root = NULL, newnode;
-	while (1) {
-		printf("\n~~~~BST MENU~~~~");
-		printf("\n1.Create a BST");
-		printf("\n2.Search");
-		printf("\n3.BST Traversals: ");
-		printf("\n4.Exit");
-		printf("\nEnter your choice: ");
-		scanf("%d", &ch);
-		switch (ch) {
-		case 1:
-			printf("\nEnter the number of elements: ");
-			scanf("%d", &n);
-			for (i = 1; i <= n; i++) {
-				newnode = create();
-				if (root == NULL)
-					root = newnode;
-				else
-					insert(root, newnode);
-			}
-			break;
-		case 2:
-			if (root == NULL)
-				printf("\nTree Is Not Created");
-			else {
-				printf("\nThe Preorder display : ");
-				preorder(root);
-				printf("\nThe Inorder display : ");
-				inorder(root);
-				printf("\nThe Postorder display : ");
-				postorder(root);
-			}
-			break;
-		case 3:
-			search(root);
-			break;
-		case 4:
-			exit(0);
-		}
-	}
+	struct Node *root = NULL;
+	root = insertNode(root, 9);
+	root = insertNode(root, 5);
+	root = insertNode(root, 10);
+	root = insertNode(root, 0);
+	root = insertNode(root, 6);
+	root = insertNode(root, 11);
+	root = insertNode(root, -1);
+	root = insertNode(root, 1);
+	root = insertNode(root, 2);
+	printf("Preorder traversal of the constructed AVL tree is\n");
+	printPreOrder(root);
+	root = deleteNode(root, 10);
+	printf("\n\nPreorder traversal after deletion of 10 \n");
+	printPreOrder(root);
+	return 0;
 }
