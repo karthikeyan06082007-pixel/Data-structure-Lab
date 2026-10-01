@@ -796,3 +796,5 @@ Elements after sorting:
 =============EX 10(d)============
 Original array: 12 7 11 13 5 6
 Sorted array: 5 6 7 11 12 13
+
+=============EX 11(a)============
