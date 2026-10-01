@@ -757,10 +757,42 @@ Enter your choice: 2 The deleted element is 8 Menu
 4. Exit
 Enter your choice: 4 Exiting...
 
--------------OUTPUT EX 10------------
+-------------OUTPUT EX 10a------------
 
 Enter the element to search: 56
 Element 56 found at position 5.
 
 Enter the element to search: 100
 Element 100 not found in the array.
+
+=============EX 10(b)============
+
+Enter the number of elements: 5
+Enter 5 numbers in ascending order:
+a[0] = 2
+a[1] = 3
+a[2] = 4
+a[3] = 5
+a[4] = 6
+Enter the search element: 6
+Element 6 found at index 4.
+
+
+=============EX 10(c)============
+
+Enter the five elements to sort:
+5
+4
+3
+2
+1
+Elements after sorting:
+1
+2
+3
+4
+5
+
+=============EX 10(d)============
+Original array: 12 7 11 13 5 6
+Sorted array: 5 6 7 11 12 13
